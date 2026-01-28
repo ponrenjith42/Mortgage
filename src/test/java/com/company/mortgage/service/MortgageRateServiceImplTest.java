@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.*;
 @ActiveProfiles("local")
 class MortgageRateServiceImplTest {
 
-    private MortgageRateServiceImpl service;
+    private MortgageRateService service;
 
     @BeforeEach
     void setUp() {
