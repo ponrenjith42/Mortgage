@@ -1,8 +1,7 @@
 package com.company.mortgage.service;
 
-import com.company.mortgage.repository.InterestRateRepository;
+import com.company.mortgage.repository.MortgageRateRepository;
 import com.company.mortgage.repository.model.MortgageRate;
-import com.company.mortgage.service.exception.DuplicateInterestRateException;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,85 +12,84 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class MortgageRateServiceH2ImplTest {
 
     @Mock
-    private InterestRateRepository interestRateRepository;
+    private MortgageRateRepository mortgageRateRepository;
 
     @InjectMocks
     private MortgageRateServiceH2Impl service;
 
-    private MortgageRate mortgageRate;
+    private List<MortgageRate> mortgageRates;
+
+    private MortgageRate mortgageRate1;
+
+    private MortgageRate mortgageRate2;
 
     @BeforeEach
-    void setUp() {
-        mortgageRate = MortgageRate.builder()
-                .maturityPeriod(10)
-                .interestRate(BigDecimal.valueOf(3.5))
-                .lastUpdatedAt(LocalDateTime.now())
-                .build();
+    void setup() {
+        mortgageRate1 = MortgageRate.builder().maturityPeriod(10).interestRate(BigDecimal.valueOf(3.5)).build();
+        mortgageRate2 = MortgageRate.builder().maturityPeriod(15).interestRate(BigDecimal.valueOf(4.0)).build();
+        mortgageRates = List.of(mortgageRate1, mortgageRate2);
     }
 
     @Test
     void getAllRates_shouldReturnRates() {
-        when(interestRateRepository.findAll()).thenReturn(List.of(mortgageRate));
+        when(mortgageRateRepository.findAll()).thenReturn(mortgageRates);
 
         List<MortgageRate> result = service.getAllRates();
 
-        assertThat(result).hasSize(1);
+        assertThat(result).hasSize(2);
         assertThat(result.getFirst().getMaturityPeriod()).isEqualTo(10);
-        verify(interestRateRepository).findAll();
+        verify(mortgageRateRepository).findAll();
     }
 
     @Test
     void getRateByMaturity_shouldReturnRate_whenExists() {
-        when(interestRateRepository.findById(10)).thenReturn(Optional.of(mortgageRate));
+        when(mortgageRateRepository.findById(10)).thenReturn(Optional.of(mortgageRate1));
 
         MortgageRate result = service.getRateByMaturity(10);
 
         assertThat(result).isNotNull();
         assertThat(result.getInterestRate()).isEqualByComparingTo("3.5");
-        verify(interestRateRepository).findById(10);
+        verify(mortgageRateRepository).findById(10);
     }
 
     @Test
     void getRateByMaturity_shouldThrowException_whenNotFound() {
-        when(interestRateRepository.findById(99)).thenReturn(Optional.empty());
+        when(mortgageRateRepository.findById(99)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> service.getRateByMaturity(99))
                 .isInstanceOf(InterestRateNotFoundException.class)
                 .hasMessageContaining("99");
 
-        verify(interestRateRepository).findById(99);
+        verify(mortgageRateRepository).findById(99);
     }
 
     @Test
-    void addRate_shouldSaveSuccessfully() {
-        when(interestRateRepository.save(any(MortgageRate.class))).thenReturn(mortgageRate);
+    void addRates_shouldSaveAllSuccessfully() {
+        when(mortgageRateRepository.saveAll(mortgageRates)).thenReturn(mortgageRates);
 
-        service.addRate(10, BigDecimal.valueOf(3.5));
+        service.addRates(mortgageRates);
 
-        verify(interestRateRepository, times(1)).save(any(MortgageRate.class));
+        verify(mortgageRateRepository, times(1)).saveAll(mortgageRates);
     }
 
     @Test
-    void addRate_shouldThrowDuplicateException_whenConstraintViolation() {
-        when(interestRateRepository.save(any(MortgageRate.class)))
+    void addRates_shouldThrowDuplicateException_whenConstraintViolation() {
+        when(mortgageRateRepository.saveAll(mortgageRates))
                 .thenThrow(DataIntegrityViolationException.class);
 
-        assertThatThrownBy(() -> service.addRate(10, BigDecimal.valueOf(3.5)))
-                .isInstanceOf(DuplicateInterestRateException.class)
-                .hasMessageContaining("10");
+        assertThatThrownBy(() -> service.addRates(mortgageRates))
+                .isInstanceOf(DataIntegrityViolationException.class);
 
-        verify(interestRateRepository, times(1)).save(any(MortgageRate.class));
+        verify(mortgageRateRepository, times(1)).saveAll(mortgageRates);
     }
 }

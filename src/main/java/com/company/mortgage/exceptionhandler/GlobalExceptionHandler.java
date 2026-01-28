@@ -27,7 +27,6 @@ public class GlobalExceptionHandler {
                 traceId,
                 HttpStatus.NOT_FOUND.value()
         );
-
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 

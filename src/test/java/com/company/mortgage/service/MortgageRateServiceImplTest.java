@@ -16,14 +16,23 @@ class MortgageRateServiceImplTest {
 
     private MortgageRateService service;
 
+    private MortgageRate mortgageRate1;
+
+    private MortgageRate mortgageRate2;
+
+    private List<MortgageRate> mortgageRates;
+
     @BeforeEach
     void setUp() {
         service = new MortgageRateServiceImpl();
+        mortgageRate1 = MortgageRate.builder().maturityPeriod(10).interestRate(BigDecimal.valueOf(3.5)).build();
+        mortgageRate2 = MortgageRate.builder().maturityPeriod(15).interestRate(BigDecimal.valueOf(4.0)).build();
+        mortgageRates = List.of(mortgageRate1, mortgageRate2);
+        service.addRates(mortgageRates);
     }
 
     @Test
     void testAddAndGetRate() {
-        service.addRate(10, BigDecimal.valueOf(3.5));
 
         MortgageRate rate = service.getRateByMaturity(10);
 
@@ -35,22 +44,18 @@ class MortgageRateServiceImplTest {
 
     @Test
     void testGetAllRates() {
-        service.addRate(5, BigDecimal.valueOf(2.0));
-        service.addRate(10, BigDecimal.valueOf(3.0));
-        service.addRate(20, BigDecimal.valueOf(4.0));
-
         List<MortgageRate> allRates = service.getAllRates();
 
-        assertThat(allRates).hasSize(3);
+        assertThat(allRates).hasSize(2);
         assertThat(allRates).extracting(MortgageRate::getMaturityPeriod)
-                .containsExactlyInAnyOrder(5, 10, 20);
+                .containsExactlyInAnyOrder(10, 15);
     }
 
     @Test
     void testDuplicateRateThrowsException() {
-        service.addRate(10, BigDecimal.valueOf(3.5));
+        List<MortgageRate> mortgageRateList = List.of(mortgageRate1,mortgageRate1);
 
-        assertThatThrownBy(() -> service.addRate(10, BigDecimal.valueOf(4.0)))
+        assertThatThrownBy(() -> service.addRates(mortgageRateList))
                 .isInstanceOf(DuplicateInterestRateException.class)
                 .hasMessageContaining("10");
     }

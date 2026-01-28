@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor @NoArgsConstructor @Getter @Builder
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 
-@Table(name = "interest_rate")
+@Table(name = "mortgage_rate")
 public class MortgageRate {
 
     @Id
