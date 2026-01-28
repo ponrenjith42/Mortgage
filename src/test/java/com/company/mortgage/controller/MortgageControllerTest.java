@@ -3,8 +3,10 @@ package com.company.mortgage.controller;
 import com.company.mortgage.repository.model.MortgageRate;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
+import com.company.mortgage.response.MortgageRateResponse;
 import com.company.mortgage.service.MortgageRateService;
 import com.company.mortgage.service.MortgageCheckService;
+import com.company.mortgage.service.mapper.MortgageRateMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,8 @@ class MortgageControllerTest {
     @MockitoBean
     private MortgageCheckService mortgageCheckService;
 
+    @MockitoBean
+    private MortgageRateMapper mortgageRateMapper;
 
     @Test
     void shouldReturnInterestRates() throws Exception {
@@ -47,14 +51,22 @@ class MortgageControllerTest {
                         .build()
         );
 
+        MortgageRateResponse response =
+                new MortgageRateResponse(
+                        10,
+                        BigDecimal.valueOf(3.5),
+                        LocalDateTime.now()
+                );
+
         when(mortgageRateService.getAllRates()).thenReturn(rates);
+        when(mortgageRateMapper.toMortgageRateResponseList(mortgageRateService.getAllRates()))
+                .thenReturn(List.of(response));
 
         mockMvc.perform(get("/v1/api/interest-rates"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].maturityPeriod").value(10))
                 .andExpect(jsonPath("$[0].interestRate").value(3.5));
     }
-
 
     @Test
     void shouldReturnMortgageCheckResult() throws Exception {

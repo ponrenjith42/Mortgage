@@ -3,7 +3,6 @@ package com.company.mortgage;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.service.MortgageRateService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -32,13 +31,6 @@ class MortgageControllerIntegrationH2Test {
 
     @Autowired
     private MortgageRateService mortgageRateService;
-
-    @BeforeEach
-    void setupRates() {
-        mortgageRateService.addRate(10, new BigDecimal("3.5"));
-        mortgageRateService.addRate(20, new BigDecimal("4.0"));
-        mortgageRateService.addRate(30, new BigDecimal("4.5"));
-    }
 
     @Test
     void testGetInterestRates() throws Exception {
