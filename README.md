@@ -109,10 +109,14 @@ docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 **GET** `/v1/api/interest-rates`
 
 **Response Body Example:**
+
 ```json
 [
-{"maturityPeriod":10,"interestRate":3.5},
-{"maturityPeriod":20,"interestRate":4.0}
+  {
+    "maturityPeriod": 20,
+    "interestRate": 3.5,
+    "lastUpdate": "2026-01-28T13:36:38.652148"
+  }
 ]
 ```
 
@@ -124,10 +128,10 @@ docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 
 ```json
 {
-  "income": 50000,
-  "maturityPeriod": 10,
-  "loanValue": 150000,
-  "homeValue": 200000
+  "income": 5000.00,
+  "maturityPeriod": 20,
+  "loanValue": 2000.00,
+  "homeValue": 3000.00
 }
 ```
 
@@ -136,7 +140,7 @@ docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 ```json
 {
   "feasible": true,
-  "monthlyCost": 1342.50
+  "monthlyCost": 11.60
 }
 ```
 
@@ -176,6 +180,6 @@ springdoc:
 ## 8. Notes
 
 - Default profile is `local` (in-memory, no DB).
-- Use `h2` profile for integration testing or CI pipelines.
+- Use `h2` profile for  (in-memory, with DB).
 - Trace IDs are generated for all errors for easy log correlation.
-- Local profile objects are ephemeral; all data will be lost on restart.
+- Local/H2 profile objects are ephemeral; all data will be lost on restart.
