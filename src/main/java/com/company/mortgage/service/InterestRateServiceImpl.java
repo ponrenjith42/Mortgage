@@ -1,8 +1,10 @@
 package com.company.mortgage.service;
 
 import com.company.mortgage.repository.model.InterestRateEntity;
+import com.company.mortgage.response.InterestRateResponse;
 import com.company.mortgage.service.exception.DuplicateInterestRateException;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
+import com.company.mortgage.service.mapper.InterestRateMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
@@ -20,14 +22,15 @@ import java.util.Map;
 public class InterestRateServiceImpl implements InterestRateService {
 
     private final Map<Integer, InterestRateEntity> mortgageRateMap = new HashMap<>();
+    private final InterestRateMapper interestRateMapper;
 
-    public List<InterestRateEntity> getAllRates() {
+    public List<InterestRateResponse> getAllRates() {
         List<InterestRateEntity> interestRateEntityList = List.copyOf(mortgageRateMap.values());
         if (interestRateEntityList.isEmpty()) {
             log.error("No interest rates found in the DB");
             throw new InterestRateNotFoundException("No interest rates found in the DB");
         }
-        return interestRateEntityList;
+        return interestRateMapper.toMortgageRateResponseList(interestRateEntityList);
     }
 
     public InterestRateEntity getRateByMaturity(int maturity) {

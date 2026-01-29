@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
-@Profile("h2")
+@Profile({"h2", "cache"})
 @EnableJpaRepositories(basePackages = "com.company.mortgage.repository")
 @EntityScan(basePackages = "com.company.mortgage.repository.model")
 public class H2JpaConfig {

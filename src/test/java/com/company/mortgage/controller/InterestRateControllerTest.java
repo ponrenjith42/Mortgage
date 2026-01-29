@@ -1,6 +1,5 @@
 package com.company.mortgage.controller;
 
-import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.response.InterestRateResponse;
 import com.company.mortgage.service.InterestRateService;
 import com.company.mortgage.service.mapper.InterestRateMapper;
@@ -36,13 +35,6 @@ class InterestRateControllerTest {
 
     @Test
     void shouldReturnInterestRates() throws Exception {
-        List<InterestRateEntity> rates = List.of(
-                InterestRateEntity.builder()
-                        .maturityPeriod(10)
-                        .interestRate(BigDecimal.valueOf(3.5))
-                        .lastUpdatedAt(LocalDateTime.now())
-                        .build()
-        );
 
         InterestRateResponse response =
                 new InterestRateResponse(
@@ -51,8 +43,7 @@ class InterestRateControllerTest {
                         LocalDateTime.now()
                 );
 
-        when(interestRateService.getAllRates()).thenReturn(rates);
-        when(interestRateMapper.toMortgageRateResponseList(interestRateService.getAllRates()))
+        when(interestRateService.getAllRates())
                 .thenReturn(List.of(response));
 
         mockMvc.perform(get("/v1/api/interest-rates"))

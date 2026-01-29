@@ -1,12 +1,13 @@
 package com.company.mortgage.service;
 
 import com.company.mortgage.repository.model.InterestRateEntity;
+import com.company.mortgage.response.InterestRateResponse;
 
 import java.util.List;
 
 public interface InterestRateService {
 
-    List<InterestRateEntity> getAllRates();
+    List<InterestRateResponse> getAllRates();
 
     InterestRateEntity getRateByMaturity(int maturityPeriod);
 

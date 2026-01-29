@@ -1,0 +1,31 @@
+spring:
+  config:
+    activate:
+      on-profile: cache
+
+  cache:
+    type: redis
+
+  redis:
+    host: ${SPRING_DATA_REDIS_HOST:redis}
+    port: ${SPRING_DATA_REDIS_PORT:6379}
+    time-to-live: 600s
+
+  datasource:
+    url: jdbc:postgresql://${SPRING_DATASOURCE_HOST:db}:5432/mydb
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: caches,health,info,env

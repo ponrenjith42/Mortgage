@@ -6,21 +6,23 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 
 - **Check mortgage feasibility** based on income, home value, and loan amount.
 - **Manage interest rates** with multiple maturity periods.
+
 - **Profiles**:
     - `local` → in-memory, no database (pure runtime, no persistence)
     - `h2` → in-memory H2 database for testing and integration
+    - `cache` → Uses Redis cache and Postgres database
 
-**Technologies used**:
+## 2. Technologies used
 
 - Java 21, Spring Boot 3.5+
-- Spring Data JPA (for H2 profile)
+- Spring Data JPA (for H2 and Postgres profiles)
 - SLF4J logging
 - Swagger / OpenAPI
 - Docker for containerized deployment
 
 ---
 
-## 2. Prerequisites
+## 3. Prerequisites
 
 - JDK 21+
 - Maven 3.9+
@@ -29,56 +31,20 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 
 ---
 
-## 3. Profiles and Configuration
+## 4. Profiles and Configuration
 
 **Profiles**:
 
-| Profile | Description                             | Database           |
-|---------|-----------------------------------------|------------------|
-| local   | In-memory, no persistence               | None              |
-| h2      | In-memory database for testing         | H2                |
+| Profile | Description                        | Database      |
+|---------|------------------------------------|---------------|
+| local   | In-memory, no persistence          | None          |
+| h2      | In-memory database for testing     | H2            |
+| cache   | Uses Redis cache and Postgres DB   | Redis+Postgre |
 
-**Local profile (`application-local.yml`)**:
 
-```yaml
-spring:
-  config:
-    activate:
-      on-profile: local
-
-# No database configuration for local
-# Application uses in-memory runtime objects only
-
-```
-**H2 profile (`application-h2.yml`)**:
-```yaml
-spring:
-  config:
-    activate:
-      on-profile: h2
-
-  datasource:
-    url: jdbc:h2:mem:mortgage-db
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-```
-
-## 4. Running the Application
+## 5. Running the Application
 
 **Locally with Maven:**
-
 
 ```bash
 # Run the application with the local profile (in-memory, no database)
@@ -87,6 +53,8 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 # Run the application with the H2 profile (in-memory H2 database)
 mvn spring-boot:run -Dspring-boot.run.profiles=h2
 
+# Run the application with the cache profile (Redis cache + Postgres DB)
+mvn spring-boot:run -Dspring-boot.run.profiles=cache
 ```
 **With Docker:**
 
@@ -100,11 +68,13 @@ docker run -e SPRING_PROFILES_ACTIVE=local -p 8080:8080 mortgage-app
 # Run with H2 profile
 docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 
+# Run with Redis cache profile
+docker run -e SPRING_PROFILES_ACTIVE=cache -e SPRING_REDIS_HOST=redis -e SPRING_REDIS_PORT=6379 -p 8080:8080 mortgage-app
 ```
 
-## 5. API Endpoints
+## 6. API Endpoints
 
-### 5.1 Get Interest Rates
+### 6.1 Get Interest Rates
 
 **GET** `/v1/api/interest-rates`
 
@@ -120,7 +90,7 @@ docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 ]
 ```
 
-### 5.1 Mortgage Check
+### 6.2 Mortgage Check
 
 **POST** `/v1/api/mortgage-check`
 
@@ -144,7 +114,7 @@ docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 }
 ```
 
-## 6. Error Handling
+## 7. Error Handling
 
 All errors include a unique `traceId` for easier debugging.
 
@@ -165,7 +135,7 @@ All errors include a unique `traceId` for easier debugging.
 }
 ```
 
-## 7. Swagger / API Documentation
+## 8. Swagger / API Documentation
 
 - **Swagger UI:** [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
 - **OpenAPI JSON:** [http://localhost:8080/v3/api-docs](http://localhost:8080/v3/api-docs)
@@ -177,9 +147,10 @@ springdoc:
   swagger-ui:
     enabled: false
 ```
-## 8. Notes
+## 9. Notes
 
 - Default profile is `local` (in-memory, no DB).
 - Use `h2` profile for  (in-memory, with DB).
+- Use `cache` profile for  (redis, with DB).
 - Trace IDs are generated for all errors for easy log correlation.
 - Local/H2 profile objects are ephemeral; all data will be lost on restart.

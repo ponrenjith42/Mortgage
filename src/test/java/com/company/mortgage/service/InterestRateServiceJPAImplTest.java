@@ -2,7 +2,9 @@ package com.company.mortgage.service;
 
 import com.company.mortgage.repository.InterestRateRepository;
 import com.company.mortgage.repository.model.InterestRateEntity;
+import com.company.mortgage.response.InterestRateResponse;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
+import com.company.mortgage.service.mapper.InterestRateMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.dao.DataIntegrityViolationException;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,13 +22,16 @@ import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class InterestRateServiceH2ImplTest {
+class InterestRateServiceJPAImplTest {
 
     @Mock
     private InterestRateRepository interestRateRepository;
 
+    @Mock
+    private InterestRateMapper interestRateMapper;
+
     @InjectMocks
-    private InterestRateServiceH2Impl service;
+    private InterestRateServiceJPAImpl service;
 
     private List<InterestRateEntity> interestRateEntities;
 
@@ -42,12 +48,19 @@ class InterestRateServiceH2ImplTest {
 
     @Test
     void getAllRates_shouldReturnRates() {
-        when(interestRateRepository.findAll()).thenReturn(interestRateEntities);
+        List<InterestRateResponse> interestRateResponses = List.of(
+                new InterestRateResponse(10, BigDecimal.valueOf(3.0), LocalDateTime.now()),
+                new InterestRateResponse(15, BigDecimal.valueOf(3.5), LocalDateTime.now())
+        );
 
-        List<InterestRateEntity> result = service.getAllRates();
+        when(interestRateRepository.findAll()).thenReturn(interestRateEntities);
+        when(interestRateMapper.toMortgageRateResponseList(interestRateEntities))
+                .thenReturn(interestRateResponses);
+
+        List<InterestRateResponse> result = service.getAllRates();
 
         assertThat(result).hasSize(2);
-        assertThat(result.getFirst().getMaturityPeriod()).isEqualTo(10);
+        assertThat(result.getFirst().maturityPeriod()).isEqualTo(10);
         verify(interestRateRepository).findAll();
     }
 
