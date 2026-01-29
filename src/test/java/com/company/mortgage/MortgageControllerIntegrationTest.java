@@ -60,17 +60,20 @@ class MortgageControllerIntegrationTest {
                 loanValue,
                 homeValue
         );
-
-        var resultActions = mockMvc.perform(post("/v1/api/mortgage-check")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.feasible").value(feasible));
+        var perform = mockMvc.perform(post("/v1/api/mortgage-check")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
 
         if (feasible) {
-            resultActions.andExpect(jsonPath("$.monthlyCost").isNumber());
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.feasible").value(true))
+                    .andExpect(jsonPath("$.monthlyCost").isNumber());
         } else {
-            resultActions.andExpect(jsonPath("$.monthlyCost").value(0));
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code")
+                            .value("MORTGAGE_NOT_FEASIBLE"))
+                    .andExpect(jsonPath("$.messages").isArray())
+                    .andExpect(jsonPath("$.status").value(400));
         }
     }
 

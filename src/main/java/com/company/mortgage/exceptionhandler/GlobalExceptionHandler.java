@@ -3,6 +3,7 @@ package com.company.mortgage.exceptionhandler;
 import com.company.mortgage.error.ErrorMessageResponse;
 import com.company.mortgage.service.exception.DuplicateInterestRateException;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
+import com.company.mortgage.service.exception.MortgageNotFeasibleException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,4 +60,34 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(MortgageNotFeasibleException.class)
+    public ResponseEntity<ErrorMessageResponse> handleMortgageNotFeasible(
+            MortgageNotFeasibleException ex) {
+        String traceId = UUID.randomUUID().toString();
+        log.warn("MortgageNotFeasibleException: {} (traceId={})", ex.getMessage(), traceId);
+        ErrorMessageResponse response = new ErrorMessageResponse(
+                "MORTGAGE_NOT_FEASIBLE",
+                List.of(ex.getMessage()),
+                traceId,
+                HttpStatus.BAD_REQUEST.value()
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorMessageResponse> handleInternalServerError(Exception ex) {
+        String traceId = UUID.randomUUID().toString();
+        log.error("Unhandled exception: {} (traceId={})", ex.getMessage(), traceId, ex);
+
+        ErrorMessageResponse response = new ErrorMessageResponse(
+                "INTERNAL_SERVER_ERROR",
+                List.of("An unexpected error occurred. Please contact support."),
+                traceId,
+                HttpStatus.INTERNAL_SERVER_ERROR.value()
+        );
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
 }
+

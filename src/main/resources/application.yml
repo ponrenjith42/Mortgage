@@ -1,6 +1,8 @@
 spring:
   application:
     name: mortgage
+  profiles:
+    active: local
 
 management:
   endpoints:

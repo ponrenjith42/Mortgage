@@ -4,7 +4,9 @@ import com.company.mortgage.repository.model.MortgageRate;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
-import org.junit.jupiter.api.BeforeEach;
+import com.company.mortgage.service.exception.MortgageNotFeasibleException;
+import com.company.mortgage.service.validator.MortgageRuleEngine;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -23,16 +25,17 @@ class MortgageCheckServiceImplTest {
 
     @Mock
     private MortgageRateService mortgageRateService;
-
+    @Mock
+    private MortgageRuleEngine mortgageRuleEngine;
     @InjectMocks
     private MortgageCheckServiceImpl mortgageCheckService;
 
-    private MortgageCheckRequest feasibleRequest;
-    private MortgageCheckRequest incomeFailRequest;
-    private MortgageCheckRequest homeValueFailRequest;
+    private static MortgageCheckRequest feasibleRequest;
+    private static MortgageCheckRequest incomeFailRequest;
+    private static MortgageCheckRequest homeValueFailRequest;
 
-    @BeforeEach
-    void setup() {
+    @BeforeAll
+    static void setup() {
         feasibleRequest = new MortgageCheckRequest(
                 new BigDecimal("50000"),
                 10,
@@ -57,31 +60,44 @@ class MortgageCheckServiceImplTest {
 
     @Test
     void testCheckMortgage_Feasible() {
-        MortgageRate rate = new MortgageRate(10, new BigDecimal("3.5"), LocalDateTime.now());
+        MortgageRate rate =
+                new MortgageRate(10, new BigDecimal("3.5"), LocalDateTime.now());
+
         when(mortgageRateService.getRateByMaturity(10)).thenReturn(rate);
 
-        MortgageCheckResponse response = mortgageCheckService.checkMortgage(feasibleRequest);
+        MortgageCheckResponse response =
+                mortgageCheckService.checkMortgage(feasibleRequest);
 
         assertThat(response.feasible()).isTrue();
         assertThat(response.monthlyCost()).isPositive();
-        verify(mortgageRateService, times(1)).getRateByMaturity(10);
+        verify(mortgageRateService).getRateByMaturity(10);
     }
 
     @Test
     void testCheckMortgage_InfeasibleIncome() {
-        MortgageCheckResponse response = mortgageCheckService.checkMortgage(incomeFailRequest);
+        doThrow(new MortgageNotFeasibleException("Loan value exceeds income"))
+                .when(mortgageRuleEngine)
+                .validate(incomeFailRequest);
 
-        assertThat(response.feasible()).isFalse();
-        assertThat(response.monthlyCost()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThatThrownBy(() ->
+                mortgageCheckService.checkMortgage(incomeFailRequest))
+                .isInstanceOf(MortgageNotFeasibleException.class)
+                .hasMessageContaining("income");
+
         verifyNoInteractions(mortgageRateService);
     }
 
     @Test
     void testCheckMortgage_InfeasibleHomeValue() {
-        MortgageCheckResponse response = mortgageCheckService.checkMortgage(homeValueFailRequest);
+        doThrow(new MortgageNotFeasibleException("Loan value exceeds home value"))
+                .when(mortgageRuleEngine)
+                .validate(homeValueFailRequest);
 
-        assertThat(response.feasible()).isFalse();
-        assertThat(response.monthlyCost()).isEqualByComparingTo(BigDecimal.ZERO);
+        assertThatThrownBy(() ->
+                mortgageCheckService.checkMortgage(homeValueFailRequest))
+                .isInstanceOf(MortgageNotFeasibleException.class)
+                .hasMessageContaining("home value");
+
         verifyNoInteractions(mortgageRateService);
     }
 
@@ -90,7 +106,8 @@ class MortgageCheckServiceImplTest {
         when(mortgageRateService.getRateByMaturity(10))
                 .thenThrow(new InterestRateNotFoundException(10));
 
-        assertThatThrownBy(() -> mortgageCheckService.checkMortgage(feasibleRequest))
+        assertThatThrownBy(() ->
+                mortgageCheckService.checkMortgage(feasibleRequest))
                 .isInstanceOf(InterestRateNotFoundException.class)
                 .hasMessageContaining("10");
     }

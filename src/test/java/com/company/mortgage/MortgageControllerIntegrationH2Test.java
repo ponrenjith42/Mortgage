@@ -41,8 +41,13 @@ class MortgageControllerIntegrationH2Test {
 
     @ParameterizedTest(name = "income={0}, maturity={1}, loan={2}, home={3} → feasible={4}")
     @CsvSource({
+            // feasible
             "50000, 10, 150000, 200000, true",
+
+            // infeasible - low income
             "30000, 10, 150000, 200000, false",
+
+            // infeasible - loan > home value
             "100000, 10, 250000, 200000, false"
     })
     void testMortgageCheckParameterized(
@@ -53,18 +58,26 @@ class MortgageControllerIntegrationH2Test {
             boolean feasible
     ) throws Exception {
 
-        var request = new MortgageCheckRequest(income, maturityPeriod, loanValue, homeValue);
-
-        var resultActions = mockMvc.perform(post("/v1/api/mortgage-check")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.feasible").value(feasible));
+        MortgageCheckRequest request = new MortgageCheckRequest(
+                income,
+                maturityPeriod,
+                loanValue,
+                homeValue
+        );
+        var perform = mockMvc.perform(post("/v1/api/mortgage-check")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
 
         if (feasible) {
-            resultActions.andExpect(jsonPath("$.monthlyCost").isNumber());
+            perform.andExpect(status().isOk())
+                    .andExpect(jsonPath("$.feasible").value(true))
+                    .andExpect(jsonPath("$.monthlyCost").isNumber());
         } else {
-            resultActions.andExpect(jsonPath("$.monthlyCost").value(0));
+            perform.andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code")
+                            .value("MORTGAGE_NOT_FEASIBLE"))
+                    .andExpect(jsonPath("$.messages").isArray())
+                    .andExpect(jsonPath("$.status").value(400));
         }
     }
 
