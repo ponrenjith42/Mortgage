@@ -1,6 +1,6 @@
 package com.company.mortgage.service;
 
-import com.company.mortgage.repository.model.MortgageRate;
+import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
 import com.company.mortgage.service.validator.MortgageRuleEngine;
@@ -14,15 +14,15 @@ import java.math.RoundingMode;
 @RequiredArgsConstructor
 public class MortgageCheckServiceImpl implements MortgageCheckService {
 
-    private final MortgageRateService mortgageRateService;
+    private final InterestRateService interestRateService;
     private final MortgageRuleEngine mortgageRuleEngine;
 
     public MortgageCheckResponse checkMortgage(MortgageCheckRequest request) {
         mortgageRuleEngine.validate(request);
-        MortgageRate mortgageRate = mortgageRateService.getRateByMaturity(request.maturityPeriod());
+        InterestRateEntity interestRateEntity = interestRateService.getRateByMaturity(request.maturityPeriod());
         BigDecimal monthlyCost = calculateMonthlyCost(
                 request.loanValue(),
-                mortgageRate.getInterestRate(),
+                interestRateEntity.getInterestRate(),
                 request.maturityPeriod()
         );
         return new MortgageCheckResponse(true, monthlyCost);

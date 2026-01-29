@@ -70,9 +70,9 @@ public class GlobalExceptionHandler {
                 "MORTGAGE_NOT_FEASIBLE",
                 List.of(ex.getMessage()),
                 traceId,
-                HttpStatus.BAD_REQUEST.value()
+                HttpStatus.UNPROCESSABLE_ENTITY.value()
         );
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.unprocessableEntity().body(response);
     }
 
     @ExceptionHandler(Exception.class)

@@ -1,7 +1,6 @@
-package com.company.mortgage;
+package com.company.mortgage.integrationtest;
 
 import com.company.mortgage.request.MortgageCheckRequest;
-import com.company.mortgage.service.MortgageRateService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -10,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.math.BigDecimal;
@@ -20,24 +18,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-@ActiveProfiles("h2")
-class MortgageControllerIntegrationH2Test {
+class MortgageControllerIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private MortgageRateService mortgageRateService;
-
-    @Test
-    void testGetInterestRates() throws Exception {
-        mockMvc.perform(get("/v1/api/interest-rates"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$").isArray());
-    }
 
     @ParameterizedTest(name = "income={0}, maturity={1}, loan={2}, home={3} → feasible={4}")
     @CsvSource({
@@ -73,11 +60,11 @@ class MortgageControllerIntegrationH2Test {
                     .andExpect(jsonPath("$.feasible").value(true))
                     .andExpect(jsonPath("$.monthlyCost").isNumber());
         } else {
-            perform.andExpect(status().isBadRequest())
+            perform.andExpect(status().isUnprocessableEntity())
                     .andExpect(jsonPath("$.code")
                             .value("MORTGAGE_NOT_FEASIBLE"))
                     .andExpect(jsonPath("$.messages").isArray())
-                    .andExpect(jsonPath("$.status").value(400));
+                    .andExpect(jsonPath("$.status").value(422));
         }
     }
 

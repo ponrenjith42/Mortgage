@@ -86,12 +86,12 @@ class GlobalExceptionHandlerTest {
         ResponseEntity<ErrorMessageResponse> response =
                 handler.handleMortgageNotFeasible(ex);
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().code()).isEqualTo("MORTGAGE_NOT_FEASIBLE");
         assertThat(response.getBody().messages())
                 .containsExactly("Loan value exceeds 4 times the income");
-        assertThat(response.getBody().status()).isEqualTo(400);
+        assertThat(response.getBody().status()).isEqualTo(422);
         assertThat(response.getBody().traceId()).isNotNull();
     }
 

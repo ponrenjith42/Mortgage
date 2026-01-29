@@ -1,7 +1,7 @@
 package com.company.mortgage.configuration;
 
-import com.company.mortgage.repository.model.MortgageRate;
-import com.company.mortgage.service.MortgageRateService;
+import com.company.mortgage.repository.model.InterestRateEntity;
+import com.company.mortgage.service.InterestRateService;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,15 +13,15 @@ import java.util.List;
 public class MortgageRateConfig {
 
     @Bean
-    ApplicationRunner initializeMortgageRates(MortgageRateService mortgageRateService) {
+    ApplicationRunner initializeMortgageRates(InterestRateService interestRateService) {
         return args -> {
-            List<MortgageRate> rates = List.of(
-                    MortgageRate.builder().maturityPeriod(5).interestRate(new BigDecimal("2.0")).build(),
-                    MortgageRate.builder().maturityPeriod(10).interestRate(new BigDecimal("3.0")).build(),
-                    MortgageRate.builder().maturityPeriod(15).interestRate(new BigDecimal("3.5")).build(),
-                    MortgageRate.builder().maturityPeriod(20).interestRate(new BigDecimal("4.0")).build()
+            List<InterestRateEntity> rates = List.of(
+                    InterestRateEntity.builder().maturityPeriod(5).interestRate(new BigDecimal("2.0")).build(),
+                    InterestRateEntity.builder().maturityPeriod(10).interestRate(new BigDecimal("3.0")).build(),
+                    InterestRateEntity.builder().maturityPeriod(15).interestRate(new BigDecimal("3.5")).build(),
+                    InterestRateEntity.builder().maturityPeriod(20).interestRate(new BigDecimal("4.0")).build()
             );
-            mortgageRateService.addRates(rates);
+            interestRateService.addRates(rates);
         };
     }
 }

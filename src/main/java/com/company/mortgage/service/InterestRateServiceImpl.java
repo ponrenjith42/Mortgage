@@ -1,6 +1,6 @@
 package com.company.mortgage.service;
 
-import com.company.mortgage.repository.model.MortgageRate;
+import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.service.exception.DuplicateInterestRateException;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -17,21 +17,21 @@ import java.util.Map;
 @Profile("local")
 @RequiredArgsConstructor
 @Slf4j
-public class MortgageRateServiceImpl implements MortgageRateService {
+public class InterestRateServiceImpl implements InterestRateService {
 
-    private final Map<Integer, MortgageRate> mortgageRateMap = new HashMap<>();
+    private final Map<Integer, InterestRateEntity> mortgageRateMap = new HashMap<>();
 
-    public List<MortgageRate> getAllRates() {
-        List<MortgageRate> mortgageRateList = List.copyOf(mortgageRateMap.values());
-        if (mortgageRateList.isEmpty()) {
+    public List<InterestRateEntity> getAllRates() {
+        List<InterestRateEntity> interestRateEntityList = List.copyOf(mortgageRateMap.values());
+        if (interestRateEntityList.isEmpty()) {
             log.error("No interest rates found in the DB");
             throw new InterestRateNotFoundException("No interest rates found in the DB");
         }
-        return mortgageRateList;
+        return interestRateEntityList;
     }
 
-    public MortgageRate getRateByMaturity(int maturity) {
-        MortgageRate rate = mortgageRateMap.get(maturity);
+    public InterestRateEntity getRateByMaturity(int maturity) {
+        InterestRateEntity rate = mortgageRateMap.get(maturity);
         if (rate == null) {
             throw new InterestRateNotFoundException(maturity);
         }
@@ -39,8 +39,8 @@ public class MortgageRateServiceImpl implements MortgageRateService {
     }
 
     @Override
-    public void addRates(List<MortgageRate> mortgageRates) {
-        for (MortgageRate rate : mortgageRates) {
+    public void addRates(List<InterestRateEntity> interestRateEntities) {
+        for (InterestRateEntity rate : interestRateEntities) {
             if (mortgageRateMap.putIfAbsent(rate.getMaturityPeriod(), rate) != null) {
                 log.error("Failed to add mortgage rate for maturity period {}: duplicate entry)", rate.getMaturityPeriod());
                 throw new DuplicateInterestRateException(rate.getMaturityPeriod());

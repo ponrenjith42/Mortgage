@@ -1,6 +1,6 @@
 package com.company.mortgage.service;
 
-import com.company.mortgage.repository.model.MortgageRate;
+import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
@@ -24,7 +24,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 class MortgageCheckServiceImplTest {
 
     @Mock
-    private MortgageRateService mortgageRateService;
+    private InterestRateService interestRateService;
     @Mock
     private MortgageRuleEngine mortgageRuleEngine;
     @InjectMocks
@@ -60,17 +60,17 @@ class MortgageCheckServiceImplTest {
 
     @Test
     void testCheckMortgage_Feasible() {
-        MortgageRate rate =
-                new MortgageRate(10, new BigDecimal("3.5"), LocalDateTime.now());
+        InterestRateEntity rate =
+                new InterestRateEntity(10, new BigDecimal("3.5"), LocalDateTime.now());
 
-        when(mortgageRateService.getRateByMaturity(10)).thenReturn(rate);
+        when(interestRateService.getRateByMaturity(10)).thenReturn(rate);
 
         MortgageCheckResponse response =
                 mortgageCheckService.checkMortgage(feasibleRequest);
 
         assertThat(response.feasible()).isTrue();
         assertThat(response.monthlyCost()).isPositive();
-        verify(mortgageRateService).getRateByMaturity(10);
+        verify(interestRateService).getRateByMaturity(10);
     }
 
     @Test
@@ -84,7 +84,7 @@ class MortgageCheckServiceImplTest {
                 .isInstanceOf(MortgageNotFeasibleException.class)
                 .hasMessageContaining("income");
 
-        verifyNoInteractions(mortgageRateService);
+        verifyNoInteractions(interestRateService);
     }
 
     @Test
@@ -98,12 +98,12 @@ class MortgageCheckServiceImplTest {
                 .isInstanceOf(MortgageNotFeasibleException.class)
                 .hasMessageContaining("home value");
 
-        verifyNoInteractions(mortgageRateService);
+        verifyNoInteractions(interestRateService);
     }
 
     @Test
     void testCheckMortgage_RateNotFound() {
-        when(mortgageRateService.getRateByMaturity(10))
+        when(interestRateService.getRateByMaturity(10))
                 .thenThrow(new InterestRateNotFoundException(10));
 
         assertThatThrownBy(() ->

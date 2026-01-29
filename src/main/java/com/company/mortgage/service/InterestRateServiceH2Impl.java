@@ -1,7 +1,7 @@
 package com.company.mortgage.service;
 
-import com.company.mortgage.repository.MortgageRateRepository;
-import com.company.mortgage.repository.model.MortgageRate;
+import com.company.mortgage.repository.InterestRateRepository;
+import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.service.exception.InterestRateNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -15,23 +15,23 @@ import java.util.List;
 @Profile("h2")
 @RequiredArgsConstructor
 @Slf4j
-public class MortgageRateServiceH2Impl implements MortgageRateService {
+public class InterestRateServiceH2Impl implements InterestRateService {
 
-    private final MortgageRateRepository mortgageRateRepository;
+    private final InterestRateRepository interestRateRepository;
 
     @Override
-    public List<MortgageRate> getAllRates() {
-        List<MortgageRate> mortgageRateList = mortgageRateRepository.findAll();
-        if (mortgageRateList.isEmpty()) {
+    public List<InterestRateEntity> getAllRates() {
+        List<InterestRateEntity> interestRateEntityList = interestRateRepository.findAll();
+        if (interestRateEntityList.isEmpty()) {
             log.error("No interest rates found in the DB");
             throw new InterestRateNotFoundException("No interest rates found in the DB");
         }
-        return mortgageRateList;
+        return interestRateEntityList;
     }
 
     @Override
-    public MortgageRate getRateByMaturity(int maturity) {
-        return mortgageRateRepository.findById(maturity).orElseThrow(() -> {
+    public InterestRateEntity getRateByMaturity(int maturity) {
+        return interestRateRepository.findById(maturity).orElseThrow(() -> {
             log.error("Interest rate not found for maturity: {}", maturity);
             return new InterestRateNotFoundException(maturity);
         });
@@ -39,8 +39,8 @@ public class MortgageRateServiceH2Impl implements MortgageRateService {
 
     @Override
     @Transactional
-    public void addRates(List<MortgageRate> rates) {
-        mortgageRateRepository.saveAll(rates);
+    public void addRates(List<InterestRateEntity> rates) {
+        interestRateRepository.saveAll(rates);
         log.info("Added {} mortgage rates in bulk", rates.size());
     }
 
