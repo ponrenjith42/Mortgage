@@ -7,20 +7,23 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
 class InterestRateControllerIntegrationTest {
+
+    private static final String TRACE_ID = "d3b07384-d9a3-4f76-9e0a-2f3b6c4e1a7b";
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     void testGetInterestRates() throws Exception {
-        mockMvc.perform(get("/v1/api/interest-rates"))
+        mockMvc.perform(get("/v1/api/interest-rates")
+                .header("X-Trace-Id", TRACE_ID))
                 .andExpect(status().isOk())
+                .andExpect(header().string("X-Trace-Id", TRACE_ID))
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(4))
 

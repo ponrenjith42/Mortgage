@@ -1,24 +1,41 @@
 package com.company.mortgage.repository.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-    @Entity
-    @AllArgsConstructor @NoArgsConstructor @Getter @Builder
-    @EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@Entity
+@Table(
+        name = "interest_rate_table",
+        indexes = {
+                @Index(name = "idx_maturity_period", columnList = "maturity_period")
+        }
+)
+@Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
+@ToString
+public class InterestRateEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Table(name = "interest_rate")
-    public class InterestRateEntity {
+    @Column(name = "maturity_period",nullable = false,unique = true)
+    @EqualsAndHashCode.Include
+    private int maturityPeriod;
 
-        @Id
-        @EqualsAndHashCode.Include
-        private int maturityPeriod;
-        private BigDecimal interestRate;
-        @Builder.Default
-        private LocalDateTime lastUpdatedAt = LocalDateTime.now();
+    @Column(name = "interest_rate",nullable = false)
+    private BigDecimal interestRate;
+
+    @Column(name = "last_update",nullable = false)
+    private LocalDateTime lastUpdate;
+
+    @Builder
+    private InterestRateEntity(int maturityPeriod, BigDecimal interestRate, LocalDateTime lastUpdate) {
+        this.maturityPeriod = maturityPeriod;
+        this.interestRate = interestRate;
+        this.lastUpdate = lastUpdate;
     }
+}

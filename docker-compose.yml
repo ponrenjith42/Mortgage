@@ -14,6 +14,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: postgres
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
+    volumes:
+      - ./external:/external
     depends_on:
       db:
         condition: service_healthy
@@ -25,7 +27,7 @@ services:
     environment:
       POSTGRES_DB: mydb
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgresv
+      POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"
     volumes:

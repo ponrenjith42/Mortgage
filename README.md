@@ -8,7 +8,6 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 - **Manage interest rates** with multiple maturity periods.
 
 - **Profiles**:
-    - `local` → in-memory, no database (pure runtime, no persistence)
     - `h2` → in-memory H2 database for testing and integration
     - `cache` → Uses Redis cache and Postgres database
 
@@ -19,12 +18,13 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 - SLF4J logging
 - Swagger / OpenAPI
 - Docker for containerized deployment
+- MDC (Mapped Diagnostic Context) for request tracing / correlation
 
 ---
 
 ## 3. Prerequisites
 
-- JDK 21+
+- JDK 21+ 
 - Maven 3.9+
 - Docker (optional, for containerized deployment)
 - IDE (IntelliJ IDEA, VS Code, etc.)
@@ -35,11 +35,10 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 
 **Profiles**:
 
-| Profile | Description                        | Database      |
-|---------|------------------------------------|---------------|
-| local   | In-memory, no persistence          | None          |
-| h2      | In-memory database for testing     | H2            |
-| cache   | Uses Redis cache and Postgres DB   | Redis+Postgre |
+| Profile | Description                       | Database      |
+|---------|-----------------------------------|---------------|
+| h2      | In-memory database for testing    | H2            |
+| cache   | Uses Redis cache and Postgres DB  | Redis+Postgre |
 
 
 ## 5. Running the Application
@@ -47,8 +46,6 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 **Locally with Maven:**
 
 ```bash
-# Run the application with the local profile (in-memory, no database)
-mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 # Run the application with the H2 profile (in-memory H2 database)
 mvn spring-boot:run -Dspring-boot.run.profiles=h2
@@ -62,14 +59,11 @@ mvn spring-boot:run -Dspring-boot.run.profiles=cache
 # Build Docker image
 docker build -t mortgage-app .
 
-# Run with local profile
-docker run -e SPRING_PROFILES_ACTIVE=local -p 8080:8080 mortgage-app
-
 # Run with H2 profile
 docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
 
 # Run with Redis cache profile
-docker run -e SPRING_PROFILES_ACTIVE=cache -e SPRING_REDIS_HOST=redis -e SPRING_REDIS_PORT=6379 -p 8080:8080 mortgage-app
+docker-compose up -d
 ```
 
 ## 6. API Endpoints
@@ -118,11 +112,11 @@ docker run -e SPRING_PROFILES_ACTIVE=cache -e SPRING_REDIS_HOST=redis -e SPRING_
 
 All errors include a unique `traceId` for easier debugging.
 
-| Code                     | Description                            |
-|--------------------------|----------------------------------------|
-| INTEREST_RATE_NOT_FOUND   | Maturity period does not exist         |
-| DUPLICATE_INTEREST_RATE   | Interest rate already exists           |
-| VALIDATION_ERROR          | Input payload is invalid               |
+| Code                    | Description                    |
+|-------------------------|--------------------------------|
+| INTEREST_RATE_NOT_FOUND | Maturity period does not exist |
+| VALIDATION_ERROR        | Input payload is invalid       |  
+| MORTGAGE_NOT_FEASIBLE   | Business Rule is violated      | 
 
 **Example Error Response:**
 
@@ -149,7 +143,6 @@ springdoc:
 ```
 ## 9. Notes
 
-- Default profile is `local` (in-memory, no DB).
 - Use `h2` profile for  (in-memory, with DB).
 - Use `cache` profile for  (redis, with DB).
 - Trace IDs are generated for all errors for easy log correlation.

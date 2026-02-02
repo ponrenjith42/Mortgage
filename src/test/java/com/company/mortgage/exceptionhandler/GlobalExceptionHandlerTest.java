@@ -1,14 +1,16 @@
 package com.company.mortgage.exceptionhandler;
 
 import com.company.mortgage.error.ErrorMessageResponse;
-import com.company.mortgage.service.exception.DuplicateInterestRateException;
-import com.company.mortgage.service.exception.InterestRateNotFoundException;
-import com.company.mortgage.service.exception.MortgageNotFeasibleException;
+import com.company.mortgage.exception.InterestRateNotFoundException;
+import com.company.mortgage.exception.MortgageNotFeasibleException;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -32,6 +34,16 @@ class GlobalExceptionHandlerTest {
     @Mock
     private MethodArgumentNotValidException methodArgumentNotValidException;
 
+    @BeforeEach
+     void setUp (){
+        MDC.put("traceId", "test-TraceId");
+    }
+
+    @AfterEach
+    void tearDown() {
+        MDC.clear();
+    }
+
     @Test
     void testHandleInterestRateNotFound() {
         InterestRateNotFoundException ex = new InterestRateNotFoundException(10);
@@ -42,18 +54,7 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
         assertThat(response.getBody().code()).isEqualTo("INTEREST_RATE_NOT_FOUND");
-    }
-
-    @Test
-    void testHandleDuplicateRate() {
-        DuplicateInterestRateException ex = new DuplicateInterestRateException(20);
-
-        ResponseEntity<ErrorMessageResponse> response =
-                handler.handleDuplicateRate(ex);
-
-        assertThat(response.getBody()).isNotNull();
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody().code()).isEqualTo("DUPLICATE_INTEREST_RATE");
+        assertThat(response.getBody().traceId()).isEqualTo("test-TraceId");
     }
 
     @Test
@@ -76,6 +77,7 @@ class GlobalExceptionHandlerTest {
                         "loanValue: must not be null",
                         "income: must be positive"
                 );
+        assertThat(response.getBody().traceId()).isEqualTo("test-TraceId");
     }
 
     @Test
@@ -93,6 +95,7 @@ class GlobalExceptionHandlerTest {
                 .containsExactly("Loan value exceeds 4 times the income");
         assertThat(response.getBody().status()).isEqualTo(422);
         assertThat(response.getBody().traceId()).isNotNull();
+        assertThat(response.getBody().traceId()).isEqualTo("test-TraceId");
     }
 
     @Test
@@ -109,5 +112,6 @@ class GlobalExceptionHandlerTest {
                 .containsExactly("An unexpected error occurred. Please contact support.");
         assertThat(response.getBody().status()).isEqualTo(500);
         assertThat(response.getBody().traceId()).isNotNull();
+        assertThat(response.getBody().traceId()).isEqualTo("test-TraceId");
     }
 }

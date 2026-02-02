@@ -3,6 +3,8 @@ spring:
     name: mortgage
   cache:
     type: none
+  profiles:
+    default: h2
 
 management:
   endpoints:

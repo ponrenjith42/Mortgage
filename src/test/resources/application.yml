@@ -1,6 +1,21 @@
 spring:
   profiles:
-    active: local
+    active: test
 
   cache:
       type: none
+
+mortgage:
+  rates:
+    - maturity: 5
+      interest: 2.0
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 10
+      interest: 3.0
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 15
+      interest: 3.5
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 20
+      interest: 4.0
+      lastUpdate: 2026-01-31T10:15:30

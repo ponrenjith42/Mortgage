@@ -1,88 +1,110 @@
 package com.company.mortgage.service;
 
+import com.company.mortgage.repository.InterestRateRepository;
 import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.response.InterestRateResponse;
-import com.company.mortgage.service.exception.DuplicateInterestRateException;
-import com.company.mortgage.service.exception.InterestRateNotFoundException;
+import com.company.mortgage.exception.DuplicateInterestRateException;
+import com.company.mortgage.exception.InterestRateNotFoundException;
 import com.company.mortgage.service.mapper.InterestRateMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.*;
-import static org.mockito.Mockito.when;
+import static com.company.mortgage.util.TestData.getInterestRateEntity;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
-@ExtendWith(MockitoExtension.class)
 class InterestRateServiceImplTest {
 
     @InjectMocks
     private InterestRateServiceImpl service;
 
     @Mock
-    private InterestRateMapper interestRateMapper;
+    private InterestRateRepository repository;
 
-    private InterestRateEntity interestRateEntity1;
-
-    private InterestRateEntity interestRateEntity2;
-
-    private List<InterestRateEntity> interestRateEntities;
-
-    private List<InterestRateResponse> interestRateResponses;
+    @Mock
+    private InterestRateMapper mapper;
 
     @BeforeEach
     void setUp() {
-        interestRateEntity1 = InterestRateEntity.builder().maturityPeriod(10).interestRate(BigDecimal.valueOf(3.5)).build();
-        interestRateEntity2 = InterestRateEntity.builder().maturityPeriod(15).interestRate(BigDecimal.valueOf(4.0)).build();
-        interestRateEntities = List.of(interestRateEntity1, interestRateEntity2);
+        MockitoAnnotations.openMocks(this);
+    }
 
-        interestRateResponses = List.of(
-                new InterestRateResponse(10, BigDecimal.valueOf(3.5), interestRateEntity1.getLastUpdatedAt()),
-                new InterestRateResponse(15, BigDecimal.valueOf(4.0), interestRateEntity2.getLastUpdatedAt())
+    @Test
+    void testGetAllRates_ReturnsMappedResponses() {
+
+        when(repository.findAll()).thenReturn(List.of(getInterestRateEntity(5,"2.0")));
+        InterestRateResponse response = new InterestRateResponse(
+                5,
+                BigDecimal.valueOf(2.0),
+                LocalDateTime.of(2026,01,01,11,11,11));
+        when(mapper.toMortgageRateResponseList(any())).thenReturn(List.of(response));
+
+        List<InterestRateResponse> result = service.getAllRates();
+
+        assertNotNull(result);
+        assertEquals(1, result.size());
+        verify(repository).findAll();
+        verify(mapper).toMortgageRateResponseList(any());
+    }
+
+    @Test
+    void testGetAllRates_ThrowsWhenEmpty() {
+        when(repository.findAll()).thenReturn(List.of());
+
+        InterestRateNotFoundException ex = assertThrows(
+                InterestRateNotFoundException.class,
+                () -> service.getAllRates()
         );
-        service.addRates(interestRateEntities);
+        assertEquals("No interest rates found in the DB", ex.getMessage());
     }
 
     @Test
-    void testAddAndGetRate() {
-        InterestRateEntity rate = service.getRateByMaturity(10);
+    void testGetRateByMaturity_Found() {
+        when(repository.findByMaturityPeriod(5)).thenReturn(Optional.of(getInterestRateEntity(5,"2.0")));
 
-        assertThat(rate).isNotNull();
-        assertThat(rate.getMaturityPeriod()).isEqualTo(10);
-        assertThat(rate.getInterestRate()).isEqualByComparingTo("3.5");
-        assertThat(rate.getLastUpdatedAt()).isNotNull();
+        InterestRateEntity result = service.getRateByMaturity(5);
+
+        assertNotNull(result);
+        assertEquals(5, result.getMaturityPeriod());
+        verify(repository).findByMaturityPeriod(5);
     }
 
     @Test
-    void testGetAllRates() {
-        when(interestRateMapper.toMortgageRateResponseList(interestRateEntities))
-                .thenReturn(interestRateResponses);
+    void testGetRateByMaturity_NotFound() {
+        when(repository.findByMaturityPeriod(10)).thenReturn(Optional.empty());
 
-        List<InterestRateResponse> allRates = service.getAllRates();
+        InterestRateNotFoundException ex = assertThrows(
+                InterestRateNotFoundException.class,
+                () -> service.getRateByMaturity(10)
+        );
 
-        assertThat(allRates).hasSize(2);
-        assertThat(allRates).extracting(InterestRateResponse::maturityPeriod)
-                .containsExactlyInAnyOrder(10, 15);
+        assertEquals(10, ex.getMaturityPeriod());
     }
 
     @Test
-    void testDuplicateRateThrowsException() {
-        List<InterestRateEntity> interestRateEntityList = List.of(interestRateEntity1, interestRateEntity1);
+    void testAddRates_Success() {
+        when(repository.saveAll(anyList())).thenReturn(List.of(getInterestRateEntity(5,"2.0")));
 
-        assertThatThrownBy(() -> service.addRates(interestRateEntityList))
-                .isInstanceOf(DuplicateInterestRateException.class)
-                .hasMessageContaining("10");
+        assertDoesNotThrow(() -> service.addRates(List.of(getInterestRateEntity(5,"2.0"))));
+
+        verify(repository).saveAll(anyList());
     }
 
     @Test
-    void testGetNonExistingRateThrowsException() {
-        assertThatThrownBy(() -> service.getRateByMaturity(99))
-                .isInstanceOf(InterestRateNotFoundException.class)
-                .hasMessageContaining("99");
+    void testAddRates_Duplicate_Throws() {
+        when(repository.saveAll(anyList())).thenThrow(new org.springframework.dao.DataIntegrityViolationException("Duplicate"));
+
+        DuplicateInterestRateException ex = assertThrows(
+                DuplicateInterestRateException.class,
+                () -> service.addRates(List.of(getInterestRateEntity(5,"2.0")))
+        );
+
+        assertEquals("Duplicate maturity period detected", ex.getMessage());
     }
 }
