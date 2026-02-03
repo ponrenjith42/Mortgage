@@ -8,8 +8,10 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 - **Manage interest rates** with multiple maturity periods.
 
 - **Profiles**:
-    - `h2` → in-memory H2 database for testing and integration
-    - `cache` → Uses Redis cache and Postgres database
+    - `in-memory` → Pure in-memory repository, no JPA, no H2, no Redis. Fastest for unit testing and prototyping.
+    - `h2` → In-memory H2 database, good for integration tests or local dev without external DB.
+    - `cache` → Full production-like setup with Postgres and Redis caching.
+
 
 ## 2. Technologies used
 
@@ -35,10 +37,11 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 
 **Profiles**:
 
-| Profile | Description                       | Database      |
-|---------|-----------------------------------|---------------|
-| h2      | In-memory database for testing    | H2            |
-| cache   | Uses Redis cache and Postgres DB  | Redis+Postgre |
+| Profile   | Description                                    | Database      |
+|-----------|------------------------------------------------|---------------|
+| in-memory | Pure In-Memory ,no Redis cache and Postgres DB | NIL           |
+| h2        | In-memory database for testing                 | H2            |
+| cache     | Uses Redis cache and Postgres DB               | Redis+Postgre |
 
 
 ## 5. Running the Application
@@ -46,6 +49,8 @@ This is a Spring Boot microservice that provides mortgage-related operations:
 **Locally with Maven:**
 
 ```bash
+# Run the application with the in-memory profile (in-memory)
+mvn spring-boot:run -Dspring-boot.run.profiles=in-memory
 
 # Run the application with the H2 profile (in-memory H2 database)
 mvn spring-boot:run -Dspring-boot.run.profiles=h2
@@ -58,6 +63,9 @@ mvn spring-boot:run -Dspring-boot.run.profiles=cache
 ```bash
 # Build Docker image
 docker build -t mortgage-app .
+
+# Run with in-memory profile
+docker run -e SPRING_PROFILES_ACTIVE=in-memory -p 8080:8080 mortgage-app
 
 # Run with H2 profile
 docker run -e SPRING_PROFILES_ACTIVE=h2 -p 8080:8080 mortgage-app
@@ -143,6 +151,7 @@ springdoc:
 ```
 ## 9. Notes
 
+- Use `in-memory` profile for  (in-memory, No DB).
 - Use `h2` profile for  (in-memory, with DB).
 - Use `cache` profile for  (redis, with DB).
 - Trace IDs are generated for all errors for easy log correlation.
