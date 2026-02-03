@@ -1,4 +1,4 @@
-package com.company.mortgage.service;
+package com.company.mortgage.service.impl;
 
 import com.company.mortgage.exception.InterestRateSaveException;
 import com.company.mortgage.repository.InterestRateRepository;
@@ -6,6 +6,7 @@ import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.response.InterestRateResponse;
 import com.company.mortgage.exception.DuplicateInterestRateException;
 import com.company.mortgage.exception.InterestRateNotFoundException;
+import com.company.mortgage.service.InterestRateService;
 import com.company.mortgage.service.mapper.InterestRateMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,12 +14,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Profile;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@Profile(("!in-memory"))
 @RequiredArgsConstructor
 @Slf4j
 public class InterestRateServiceImpl implements InterestRateService {

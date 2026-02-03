@@ -1,0 +1,23 @@
+spring:
+  config:
+    activate:
+      on-profile: in-memory
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+      - org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration
+
+mortgage:
+  rates:
+    - maturity: 5
+      interest: 2.0
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 10
+      interest: 3.0
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 15
+      interest: 3.5
+      lastUpdate: 2026-01-31T10:15:30
+    - maturity: 20
+      interest: 4.0
+      lastUpdate: 2026-01-31T10:15:30

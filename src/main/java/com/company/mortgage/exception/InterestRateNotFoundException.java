@@ -5,8 +5,8 @@ import lombok.Getter;
 @Getter
 public class InterestRateNotFoundException extends RuntimeException {
 
-    private final int maturityPeriod;
     private static final int NO_MATURITY_PERIOD=-1;
+    private final int maturityPeriod;
 
     public InterestRateNotFoundException(int maturityPeriod) {
         super("No interest rate found for maturity period: " + maturityPeriod);

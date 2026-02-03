@@ -1,4 +1,4 @@
-package com.company.mortgage.service;
+package com.company.mortgage.service.impl;
 
 import com.company.mortgage.repository.InterestRateRepository;
 import com.company.mortgage.repository.model.InterestRateEntity;

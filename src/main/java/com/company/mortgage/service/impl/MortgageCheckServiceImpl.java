@@ -1,8 +1,10 @@
-package com.company.mortgage.service;
+package com.company.mortgage.service.impl;
 
 import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
+import com.company.mortgage.service.InterestRateService;
+import com.company.mortgage.service.MortgageCheckService;
 import com.company.mortgage.service.validator.MortgageRuleEngine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

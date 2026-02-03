@@ -1,10 +1,11 @@
-package com.company.mortgage.service;
+package com.company.mortgage.service.impl;
 
 import com.company.mortgage.repository.model.InterestRateEntity;
 import com.company.mortgage.request.MortgageCheckRequest;
 import com.company.mortgage.response.MortgageCheckResponse;
 import com.company.mortgage.exception.InterestRateNotFoundException;
 import com.company.mortgage.exception.MortgageNotFeasibleException;
+import com.company.mortgage.service.InterestRateService;
 import com.company.mortgage.service.validator.MortgageRuleEngine;
 import com.company.mortgage.util.TestData;
 import org.junit.jupiter.api.Test;
